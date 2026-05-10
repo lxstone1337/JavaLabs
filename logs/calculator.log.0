@@ -60,3 +60,13 @@ INFO: Line 6: DIV []
 SEVERE: Line 6: Division by zeroЧЧЧ
 INFO: Line 7: PRINT []
 SEVERE: Line 7: Stack is empty
+INFO: Reading commands from standard input
+INFO: Line 1: PUSH [10]
+INFO: Line 2: PRINT []
+INFO: Line 3: MUL []
+SEVERE: Line 3: Stack underflow
+INFO: Line 4: PRINT []
+SEVERE: Line 4: Stack is empty
+INFO: Reading commands from standard input
+INFO: Reading commands from standard input
+INFO: Reading commands from standard input

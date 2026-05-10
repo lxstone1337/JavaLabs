@@ -14,7 +14,10 @@ public class Main {
             // Создаём папку logs, если её нет
             File logDir = new File("logs");
             if (!logDir.exists()) {
-                logDir.mkdir();
+                boolean created = logDir.mkdir();
+                if (!created) {
+                    System.err.println("Could not create logs directory");
+                }
             }
 
             // Обработчик для файла (максимальный размер 5MB, 3 файла ротации)
