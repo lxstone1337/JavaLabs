@@ -1,0 +1,62 @@
+INFO: Reading commands from standard input
+INFO: Line 1: POP [10]
+SEVERE: Line 1: POP command takes no arguments
+INFO: Line 2: POP [10]
+SEVERE: Line 2: POP command takes no arguments
+SEVERE: Line 3: Unknown command: MULT
+INFO: Line 4: DIV []
+SEVERE: Line 4: Stack underflow
+INFO: Line 5: PRINT []
+SEVERE: Line 5: Stack is empty
+INFO: Line 7: PUSH [10]
+INFO: Line 8: PUSH [10]
+INFO: Line 9: MUL []
+INFO: Line 10: PRINT []
+INFO: Line 12: POP [10]
+SEVERE: Line 12: POP command takes no arguments
+INFO: Line 13: POP []
+INFO: Line 14: PRINT []
+SEVERE: Line 14: Stack is empty
+INFO: Line 15: PUSH [12]
+INFO: Line 16: PUSH [13]
+INFO: Line 17: PUSH [14]
+INFO: Line 18: PRINT []
+INFO: Line 19: POP []
+INFO: Line 20: PRINT []
+INFO: Line 21: DEFINE [X, 4]
+INFO: Line 22: PUSH [X]
+INFO: Line 23: PUSH [2]
+SEVERE: Line 24: Unknown command: MULT
+INFO: Line 25: PRINT []
+INFO: Line 26: MUL []
+INFO: Line 27: PRINT []
+INFO: Line 28: DEFINE [Z, 0]
+INFO: Line 29: PRINT []
+INFO: Line 30: PUSH [Z]
+INFO: Line 31: PRINT []
+INFO: Line 32: DIV []
+SEVERE: Line 32: Division by zero
+INFO: Line 33: PRINT []
+INFO: Line 34: PRINT []
+INFO: Line 35: POP []
+INFO: Line 36: PRINT []
+INFO: Line 37: POP []
+INFO: Line 38: PRINT []
+SEVERE: Line 38: Stack is empty
+INFO: Line 39: PUSH [2]
+INFO: Line 40: DEFINE [Z, 0]
+INFO: Line 41: PUSH [Z]
+INFO: Line 42: DIV []
+SEVERE: Line 42: Division by zero
+INFO: Line 43: PRINT []
+SEVERE: Line 43: Stack is empty
+INFO: Reading commands from standard input
+SEVERE: Line 1: Unknown command: push
+SEVERE: Line 2: Unknown command: push
+SEVERE: Line 3: Unknown command: div
+INFO: Line 4: PUSH [2]
+INFO: Line 5: PUSH [0]
+INFO: Line 6: DIV []
+SEVERE: Line 6: Division by zeroЧЧЧ
+INFO: Line 7: PRINT []
+SEVERE: Line 7: Stack is empty
