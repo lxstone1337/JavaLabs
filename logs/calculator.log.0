@@ -6,3 +6,6 @@ INFO: line 4: PRINT [X]
 SEVERE: line 4: PRINT command takes no arguments
 INFO: line 5: PUSH [X]
 INFO: line 6: PRINT []
+INFO: reading commands from std input
+INFO: line 1: PUSH [10]
+INFO: line 2: PRINT []
