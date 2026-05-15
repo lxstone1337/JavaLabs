@@ -9,18 +9,18 @@ public class Main {
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
     static {
-        // Настройка логирования в файл при загрузке класса
+        //настройка логирования в файл при загрузке класса
         try {
-            // Создаём папку logs, если её нет
+            //создаём папку logs, если её нет
             File logDir = new File("logs");
             if (!logDir.exists()) {
                 boolean created = logDir.mkdir();
                 if (!created) {
-                    System.err.println("Could not create logs directory");
+                    System.err.println("couldnt create logs directory");
                 }
             }
 
-            // Обработчик для файла (максимальный размер 5MB, 3 файла ротации)
+            //обработчик для файла (мах размер 5мб, 3 файла ротации)
             FileHandler fileHandler = new FileHandler("logs/calculator.log", 5 * 1024 * 1024, 3, true);
             fileHandler.setLevel(Level.ALL);
             fileHandler.setFormatter(new SimpleFormatter() {
@@ -32,11 +32,11 @@ public class Main {
 
             LOGGER.addHandler(fileHandler);
 
-            // Опционально: убрать вывод в консоль
+            //чтобы логи не выводились в консоль каждый раз
             LOGGER.setUseParentHandlers(false);
 
         } catch (IOException e) {
-            System.err.println("Ошибка настройки логирования: " + e.getMessage());
+            System.err.println("ошибка настройки логирования: " + e.getMessage());
         }
     }
 
@@ -48,10 +48,10 @@ public class Main {
         try {
             if (args.length > 0) {
                 reader = new BufferedReader(new FileReader(args[0]));
-                LOGGER.info("Reading commands from file: " + args[0]);
+                LOGGER.info("reading commands from file: " + args[0]);
             } else {
                 reader = new BufferedReader(new InputStreamReader(System.in));
-                LOGGER.info("Reading commands from standard input");
+                LOGGER.info("reading commands from std input");
             }
 
             String line;
@@ -69,16 +69,16 @@ public class Main {
 
                 try {
                     Command command = factory.createCommand(cmdName);
-                    LOGGER.info(String.format("Line %d: %s %s", lineNum, cmdName, Arrays.toString(cmdArgs)));
+                    LOGGER.info(String.format("line %d: %s %s", lineNum, cmdName, Arrays.toString(cmdArgs)));
                     command.execute(cmdArgs, context);
                 } catch (CalcException e) {
-                    LOGGER.severe(String.format("Line %d: %s", lineNum, e.getMessage()));
+                    LOGGER.severe(String.format("line %d: %s", lineNum, e.getMessage()));
                 } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, String.format("Line %d: Unexpected error", lineNum), e);
+                    LOGGER.log(Level.SEVERE, String.format("line %d: unexpected error", lineNum), e);
                 }
             }
         } catch (FileNotFoundException e) {
-            LOGGER.severe("File not found: " + args[0]);
+            LOGGER.severe("file not found: " + args[0]);
         } catch (IOException e) {
             LOGGER.severe("IO error: " + e.getMessage());
         } finally {
@@ -86,7 +86,7 @@ public class Main {
                 try {
                     reader.close();
                 } catch (IOException e) {
-                    // ignore
+                    //бульбульбуль
                 }
             }
         }

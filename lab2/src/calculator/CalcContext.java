@@ -12,14 +12,14 @@ public class CalcContext {
 
     public double pop() throws CalcException {
         if (stack.isEmpty()) {
-            throw new CalcException("Stack underflow");
+            throw new CalcException("stack underflow");
         }
         return stack.pop();
     }
 
     public double peek() throws CalcException {
         if (stack.isEmpty()) {
-            throw new CalcException("Stack is empty");
+            throw new CalcException("stack is empty");
         }
         return stack.peek();
     }
@@ -42,17 +42,8 @@ public class CalcContext {
 
     public double getParameterValue(String name) throws CalcException {
         if (!parameters.containsKey(name)) {
-            throw new CalcException("Undefined parameter: " + name);
+            throw new CalcException("undefined parameter: " + name);
         }
         return parameters.get(name);
     }
-
-    /*// For testing purposes
-    public Deque<Double> getStackCopy() {
-        return new ArrayDeque<>(stack);
-    }
-
-    public Map<String, Double> getParametersCopy() {
-        return new HashMap<>(parameters);
-    }*/
 }

@@ -11,29 +11,29 @@ public class CommandFactory {
     static {
         try (InputStream is = CommandFactory.class.getResourceAsStream("commands.properties")) {
             if (is == null) {
-                throw new RuntimeException("commands.properties not found in classpath");
+                throw new RuntimeException("commands.properties not found");
             }
             COMMAND_MAP.load(is);
         } catch (Exception e) {
-            LOGGER.severe("Failed to load commands.properties: " + e.getMessage());
-            throw new RuntimeException("Failed to initialize CommandFactory", e);
+            LOGGER.severe("failed to load commands.properties: " + e.getMessage());
+            throw new RuntimeException("failed to initialize CommandFactory", e);
         }
     }
 
     public Command createCommand(String commandName) throws CalcException {
         String className = COMMAND_MAP.getProperty(commandName);
         if (className == null) {
-            throw new CalcException("Unknown command: " + commandName);
+            throw new CalcException("unknown command: " + commandName);
         }
         try {
             Class<?> clazz = Class.forName(className);
             Object instance = clazz.getDeclaredConstructor().newInstance();
             if (!(instance instanceof Command)) {
-                throw new CalcException("Class " + className + " does not implement Command");
+                throw new CalcException("class " + className + " does not implement command");
             }
             return (Command) instance;
         } catch (Exception e) {
-            throw new CalcException("Failed to instantiate command for " + commandName, e);
+            throw new CalcException("failed to instantiate command for " + commandName, e);
         }
     }
 }
