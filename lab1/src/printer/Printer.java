@@ -26,7 +26,7 @@ public class Printer {
         sortedList.sort((a, b) -> Integer.compare(b.getFrequency(), a.getFrequency()));
 
         try (PrintWriter writer = new PrintWriter(new FileWriter(outputFile))) {
-            writer.printf("%-20s%10s%15s%n", "Слово", "Количество", "Частота(%)");
+            writer.printf("%-20s%10s%15s%n", "слово", "количество", "частота(%)");
 
             for (WordData data : sortedList) {
                 writer.printf("%-20s%10d%14.2f%%%n",
@@ -36,7 +36,7 @@ public class Printer {
                 );
             }
         } catch (IOException e) {
-            System.err.println("Ошибка при записи в файл: " + e.getLocalizedMessage());
+            System.err.println("ошибка при записи в файл: " + e.getLocalizedMessage());
         }
     }
 }

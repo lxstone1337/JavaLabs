@@ -16,7 +16,7 @@ public class FileReader {
                 content.append((char) currentCharCode);
             }
         } catch (IOException e) {
-            System.err.println("Ошибка при чтении файла: " + e.getLocalizedMessage());
+            System.err.println("ошибка при чтении файла: " + e.getLocalizedMessage());
             return "";
         } finally {
             if (reader != null) {
