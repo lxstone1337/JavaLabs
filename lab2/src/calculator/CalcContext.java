@@ -47,12 +47,12 @@ public class CalcContext {
         return parameters.get(name);
     }
 
-    // For testing purposes
+    /*// For testing purposes
     public Deque<Double> getStackCopy() {
         return new ArrayDeque<>(stack);
     }
 
     public Map<String, Double> getParametersCopy() {
         return new HashMap<>(parameters);
-    }
+    }*/
 }
