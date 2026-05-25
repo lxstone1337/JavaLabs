@@ -24,9 +24,7 @@ public class GameModel {
     }
 
     public void initGame() {
-        for (int i = 0; i < WIDTH; i++) {
-            Arrays.fill(mesh[i], 0);
-        }
+        for (int i = 0; i < WIDTH; i++) Arrays.fill(mesh[i], 0);
         score = 0;
         lines = 0;
         gameOver = false;
@@ -50,23 +48,14 @@ public class GameModel {
     public void spawnNewShape() {
         currentShape = nextShape;
         nextShape = createRandomShape();
-
-        //нач поз
         currentShape.setPosition(WIDTH / 2 - 1, 0);
-
-        //проверка на луз
-        if (checkCollision()) {
-            gameOver = true;
-        }
+        if (checkCollision()) gameOver = true;
     }
 
     public boolean moveDown() {
         if (gameOver) return false;
-
         currentShape.move(0, 1);
-
         if (checkCollision()) {
-            //коллизия - откатываем
             currentShape.move(0, -1);
             mergeShape();
             clearLines();
@@ -79,93 +68,66 @@ public class GameModel {
     public void moveLeft() {
         if (gameOver) return;
         currentShape.move(-1, 0);
-        if (checkCollision()) {
-            currentShape.move(1, 0);
-        }
+        if (checkCollision()) currentShape.move(1, 0);
     }
 
     public void moveRight() {
         if (gameOver) return;
         currentShape.move(1, 0);
-        if (checkCollision()) {
-            currentShape.move(-1, 0);
-        }
+        if (checkCollision()) currentShape.move(-1, 0);
     }
 
     public void rotateShape() {
         if (gameOver) return;
         Shape rotated = currentShape.clone();
         rotated.rotate();
-
-        int oldX = currentShape.getX();
-        int oldY = currentShape.getY();
-
-        //пробую повернуть
         currentShape.rotate();
-
         if (checkCollision()) {
-            //eсли коллизия, откатываю поворот
+            // откат
             currentShape.rotate();
             currentShape.rotate();
-            currentShape.rotate(); // Возвращаем обратно
+            currentShape.rotate();
         }
     }
 
     private boolean checkCollision() {
         for (RectanglePart rect : currentShape.getRectangles()) {
-            int gridX = rect.x / SIZE;
-            int gridY = rect.y / SIZE;
-
-            //проверка границ
-            if (gridX < 0 || gridX >= WIDTH || gridY >= HEIGHT) {
-                return true;
-            }
-            //проверка столкновения с другими блоками (не выше игрового поля)
-            if (gridY >= 0 && mesh[gridX][gridY] == 1) {
-                return true;
-            }
+            int gx = rect.x / SIZE;
+            int gy = rect.y / SIZE;
+            if (gx < 0 || gx >= WIDTH || gy >= HEIGHT) return true;
+            if (gy >= 0 && mesh[gx][gy] == 1) return true;
         }
         return false;
     }
 
     private void mergeShape() {
         for (RectanglePart rect : currentShape.getRectangles()) {
-            int gridX = rect.x / SIZE;
-            int gridY = rect.y / SIZE;
-            if (gridY >= 0 && gridY < HEIGHT && gridX >= 0 && gridX < WIDTH) {
-                mesh[gridX][gridY] = 1;
-            }
+            int gx = rect.x / SIZE;
+            int gy = rect.y / SIZE;
+            if (gy >= 0 && gy < HEIGHT && gx >= 0 && gx < WIDTH)
+                mesh[gx][gy] = 1;
         }
     }
 
     private void clearLines() {
-        int linesCleared = 0;
+        int cleared = 0;
         for (int y = HEIGHT - 1; y >= 0; y--) {
             boolean full = true;
             for (int x = 0; x < WIDTH; x++) {
-                if (mesh[x][y] == 0) {
-                    full = false;
-                    break;
-                }
+                if (mesh[x][y] == 0) { full = false; break; }
             }
-
             if (full) {
-                for (int yy = y; yy > 0; yy--) {
-                    for (int x = 0; x < WIDTH; x++) {
-                        mesh[x][yy] = mesh[x][yy - 1];
-                    }
-                }
-                for (int x = 0; x < WIDTH; x++) {
-                    mesh[x][0] = 0;
-                }
-                linesCleared++;
+                for (int yy = y; yy > 0; yy--)
+                    for (int x = 0; x < WIDTH; x++)
+                        mesh[x][yy] = mesh[x][yy-1];
+                for (int x = 0; x < WIDTH; x++) mesh[x][0] = 0;
+                cleared++;
                 y++;
             }
         }
-
-        if (linesCleared > 0) {
-            lines += linesCleared;
-            score += linesCleared * 100;
+        if (cleared > 0) {
+            lines += cleared;
+            score += cleared * 100;
         }
     }
 

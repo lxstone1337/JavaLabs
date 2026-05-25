@@ -2,7 +2,7 @@ package tetris.view;
 
 import tetris.model.GameModel;
 import tetris.model.RectanglePart;
-import tetris.controller.GameController;
+import tetris.model.Shape;
 import javafx.animation.AnimationTimer;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
@@ -22,78 +22,70 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.Light;
 import javafx.scene.effect.Lighting;
 import javafx.stage.Stage;
-import javafx.scene.input.KeyCode;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
+import javafx.application.Platform;
 
 public class TetrisView {
     private Stage stage;
     private BorderPane root;
     private Scene scene;
-    private GameController controller;
-    private GameModel model;
-
+    private Pane gameArea;
+    private Rectangle[][] grid;
+    private Rectangle[][] nextShapeGrid;
     private Text scoreText;
     private Text linesText;
-    private Rectangle[][] grid;
-    private AnimationTimer gameLoop;
-    private long lastUpdate;
     private Button menuButton;
+    private AnimationTimer gameLoop;
     private Text gameOverText;
-    private Text gameOverHintText;
+    private Text pauseText;
     private boolean isGameOverShown = false;
-    private Pane gameArea;
 
-    // Для отображения следующей фигуры
-    private Rectangle[][] nextShapeGrid;
-    private Pane nextShapeArea;
-    private Rectangle[][] nextShapeBackgroundGrid;
+    private int[][] mesh;
+    private int score;
+    private int lines;
+    private boolean gameOver;
+    private Shape currentShape;
+    private Shape nextShape;
+
+    // Размеры сетки Next Shape: 6 колонок × 4 строки
+    private static final int NEXT_COLS = 6;
+    private static final int NEXT_ROWS = 4;
 
     public TetrisView(Stage stage) {
         this.stage = stage;
-        this.model = new GameModel();
-        this.controller = new GameController(model, this);
         initUI();
     }
 
     private void initUI() {
         root = new BorderPane();
-        root.setPadding(new Insets(0)); // Убираем отступы
+        root.setPadding(Insets.EMPTY);
 
-        // Градиентный фон
         LinearGradient backgroundGradient = new LinearGradient(
                 0, 0, 1, 1, true, CycleMethod.NO_CYCLE,
                 new Stop(0, Color.rgb(20, 25, 45)),
                 new Stop(0.5, Color.rgb(35, 20, 55)),
-                new Stop(1, Color.rgb(15, 20, 40))
-        );
+                new Stop(1, Color.rgb(15, 20, 40)));
         root.setBackground(new javafx.scene.layout.Background(
-                new javafx.scene.layout.BackgroundFill(backgroundGradient, null, null)
-        ));
+                new javafx.scene.layout.BackgroundFill(backgroundGradient, null, null)));
 
-        // Устанавливаем размеры
-        GameModel.SIZE = 30;
-        GameModel.XMAX = GameModel.SIZE * GameModel.WIDTH;
-        GameModel.YMAX = GameModel.SIZE * GameModel.HEIGHT;
+        int size = GameModel.SIZE;
+        int width = GameModel.WIDTH;
+        int height = GameModel.HEIGHT;
+        int xmax = size * width;
+        int ymax = size * height;
 
-        // Создание игрового поля - без отступов
         gameArea = new Pane();
         gameArea.setStyle("-fx-background-color: #0a0f1e;");
-        gameArea.setPrefSize(GameModel.XMAX, GameModel.YMAX);
+        gameArea.setPrefSize(xmax, ymax);
+        gameArea.setEffect(new DropShadow(15, Color.rgb(0, 0, 0, 0.5)));
 
-        // Тень для игрового поля
-        DropShadow shadow = new DropShadow();
-        shadow.setRadius(15);
-        shadow.setColor(Color.rgb(0, 0, 0, 0.5));
-        gameArea.setEffect(shadow);
-
-        // Создание сетки для основного поля
-        grid = new Rectangle[GameModel.WIDTH][GameModel.HEIGHT];
-        for (int x = 0; x < GameModel.WIDTH; x++) {
-            for (int y = 0; y < GameModel.HEIGHT; y++) {
-                Rectangle rect = new Rectangle(GameModel.SIZE - 1, GameModel.SIZE - 1);
-                rect.setX(x * GameModel.SIZE);
-                rect.setY(y * GameModel.SIZE);
+        grid = new Rectangle[width][height];
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                Rectangle rect = new Rectangle(size - 1, size - 1);
+                rect.setX(x * size);
+                rect.setY(y * size);
                 rect.setFill(Color.TRANSPARENT);
                 rect.setStroke(Color.rgb(100, 110, 140, 0.4));
                 rect.setStrokeWidth(0.8);
@@ -103,22 +95,23 @@ public class TetrisView {
         }
 
         root.setCenter(gameArea);
-        // Прижимаем игровое поле к левому краю
-        BorderPane.setAlignment(gameArea, Pos.TOP_LEFT);
+        BorderPane.setAlignment(gameArea, Pos.CENTER_LEFT);
+        // Убираем отступ между center и right
+        BorderPane.setMargin(gameArea, Insets.EMPTY);
 
-        // Правая панель с информацией
+        // Правая панель - увеличиваем ширину, чтобы закрыть зазор
         VBox rightPanel = new VBox(20);
-        rightPanel.setStyle("-fx-padding: 20 25 20 25; -fx-background-color: rgba(0,0,0,0.3);");
-        rightPanel.setPrefWidth(240);
+        rightPanel.setStyle("-fx-padding: 20 30 20 30; -fx-background-color: rgba(0,0,0,0.3);");
+        rightPanel.setPrefWidth(280);
+        rightPanel.setMinWidth(280);
+        rightPanel.setMaxWidth(280);
         rightPanel.setAlignment(Pos.TOP_CENTER);
 
-        // Красивый шрифт для заголовка
         Text gameTitle = new Text("TETRIS");
         gameTitle.setFont(Font.font("Arial", FontWeight.BOLD, 32));
         gameTitle.setFill(Color.rgb(255, 100, 100));
         gameTitle.setEffect(new DropShadow(8, Color.rgb(255, 0, 0, 0.5)));
 
-        // Текстовая информация
         scoreText = new Text("Score: 0");
         scoreText.setFont(Font.font("Consolas", FontWeight.BOLD, 22));
         scoreText.setFill(Color.rgb(255, 215, 0));
@@ -134,45 +127,44 @@ public class TetrisView {
         nextLabel.setFill(Color.rgb(200, 200, 200));
         nextLabel.setEffect(new DropShadow(2, Color.rgb(0, 0, 0, 0.5)));
 
-        // Область для следующей фигуры - фиксированный размер 120x120
-        nextShapeArea = new Pane();
+        // Область для следующей фигуры - размер 180x120 (6x4 клетки по 30px)
+        Pane nextShapeArea = new Pane();
         nextShapeArea.setStyle("-fx-background-color: rgba(20, 30, 50, 0.8); -fx-border-color: rgba(255,255,255,0.3); -fx-border-width: 2;");
-        nextShapeArea.setPrefSize(120, 120);
-        nextShapeArea.setMaxSize(120, 120);
-        nextShapeArea.setMinSize(120, 120);
+        nextShapeArea.setPrefSize(180, 120);
+        nextShapeArea.setMinSize(180, 120);
+        nextShapeArea.setMaxSize(180, 120);
         nextShapeArea.setEffect(new DropShadow(5, Color.rgb(0, 0, 0, 0.5)));
 
-        // Создаем полную сетку 4x4 для фона следующей фигуры (120/4 = 30px на клетку)
-        int nextCellSize = 30;
-        nextShapeBackgroundGrid = new Rectangle[4][4];
-        for (int x = 0; x < 4; x++) {
-            for (int y = 0; y < 4; y++) {
-                Rectangle rect = new Rectangle(nextCellSize - 1, nextCellSize - 1);
-                rect.setX(x * nextCellSize);
-                rect.setY(y * nextCellSize);
+        int cellSize = 30;
+
+        // Фоновая сетка 6x4
+        for (int x = 0; x < NEXT_COLS; x++) {
+            for (int y = 0; y < NEXT_ROWS; y++) {
+                Rectangle rect = new Rectangle(cellSize - 1, cellSize - 1);
+                rect.setX(x * cellSize);
+                rect.setY(y * cellSize);
                 rect.setFill(Color.TRANSPARENT);
-                rect.setStroke(Color.rgb(80, 90, 120, 0.4));
+                rect.setStroke(Color.rgb(80, 90, 120, 0.3));
                 rect.setStrokeWidth(0.8);
-                nextShapeBackgroundGrid[x][y] = rect;
                 nextShapeArea.getChildren().add(rect);
             }
         }
 
-        // Создаем сетку для отображения фигуры
-        nextShapeGrid = new Rectangle[4][4];
-        for (int x = 0; x < 4; x++) {
-            for (int y = 0; y < 4; y++) {
-                Rectangle rect = new Rectangle(nextCellSize - 1, nextCellSize - 1);
-                rect.setX(x * nextCellSize);
-                rect.setY(y * nextCellSize);
+        // Сетка для отображения фигуры 6x4
+        nextShapeGrid = new Rectangle[NEXT_COLS][NEXT_ROWS];
+        for (int y = 0; y < NEXT_ROWS; y++) {
+            for (int x = 0; x < NEXT_COLS; x++) {
+                Rectangle rect = new Rectangle(cellSize - 1, cellSize - 1);
+                rect.setX(x * cellSize);
+                rect.setY(y * cellSize);
                 rect.setFill(Color.TRANSPARENT);
-                rect.setStroke(Color.TRANSPARENT);
+                rect.setStroke(Color.rgb(120, 130, 160, 0.5));
+                rect.setStrokeWidth(1.0);
                 nextShapeGrid[x][y] = rect;
                 nextShapeArea.getChildren().add(rect);
             }
         }
 
-        // Кнопка меню
         menuButton = new Button("MAIN MENU");
         menuButton.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         menuButton.setStyle(
@@ -183,124 +175,41 @@ public class TetrisView {
                         "-fx-background-radius: 5;" +
                         "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 5, 0, 0, 2);"
         );
-        menuButton.setOnMouseEntered(e -> menuButton.setStyle(
-                "-fx-background-color: linear-gradient(to bottom, #c0392b, #a93226);" +
-                        "-fx-text-fill: white;" +
-                        "-fx-padding: 10 25;" +
-                        "-fx-cursor: hand;" +
-                        "-fx-background-radius: 5;" +
-                        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 8, 0, 0, 2);"
-        ));
-        menuButton.setOnMouseExited(e -> menuButton.setStyle(
-                "-fx-background-color: linear-gradient(to bottom, #e74c3c, #c0392b);" +
-                        "-fx-text-fill: white;" +
-                        "-fx-padding: 10 25;" +
-                        "-fx-cursor: hand;" +
-                        "-fx-background-radius: 5;" +
-                        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 5, 0, 0, 2);"
-        ));
         menuButton.setOnAction(e -> returnToMenu());
 
         rightPanel.getChildren().addAll(gameTitle, scoreText, linesText, nextLabel, nextShapeArea, menuButton);
         root.setRight(rightPanel);
-        // Прижимаем правую панель к верху
-        BorderPane.setAlignment(rightPanel, Pos.TOP_CENTER);
+        BorderPane.setAlignment(rightPanel, Pos.TOP_RIGHT);
+        BorderPane.setMargin(rightPanel, Insets.EMPTY);
 
-        // Создаем сцену с точными размерами
-        scene = new Scene(root, GameModel.XMAX + 240, GameModel.YMAX);
+        // Ширина сцены = игровая область + ширина правой панели
+        scene = new Scene(root, xmax + 280, ymax);
         scene.setFill(Color.TRANSPARENT);
-
-        setupKeyboardControls();
-        startGameLoop();
-
-        System.out.println("TetrisView initialized with size: " + GameModel.XMAX + "x" + GameModel.YMAX);
     }
 
-    private void setupKeyboardControls() {
-        scene.setOnKeyPressed(event -> {
-            KeyCode code = event.getCode();
-
-            if (model.isGameOver()) {
-                if (code == KeyCode.R) {
-                    restartGame();
-                } else if (code == KeyCode.ESCAPE) {
-                    returnToMenu();
-                }
-                event.consume();
-                return;
-            }
-
-            switch (code) {
-                case LEFT:
-                    controller.moveLeft();
-                    break;
-                case RIGHT:
-                    controller.moveRight();
-                    break;
-                case DOWN:
-                    controller.moveDown();
-                    break;
-                case UP:
-                    controller.rotate();
-                    break;
-                case SPACE:
-                    controller.hardDrop();
-                    break;
-                case R:
-                    restartGame();
-                    break;
-                case ESCAPE:
-                    controller.pause();
-                    break;
-                default:
-                    break;
-            }
-            event.consume();
-        });
-
-        gameArea.setOnMouseClicked(event -> {
-            gameArea.requestFocus();
-        });
-
-        gameArea.setFocusTraversable(true);
+    public void update(GameModel model) {
+        this.mesh = model.getMesh();
+        this.score = model.getScore();
+        this.lines = model.getLines();
+        this.gameOver = model.isGameOver();
+        this.currentShape = model.getCurrentShape();
+        this.nextShape = model.getNextShape();
+        render();
     }
 
-    private void startGameLoop() {
-        gameLoop = new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                if (lastUpdate == 0) {
-                    lastUpdate = now;
-                    return;
-                }
-                if (now - lastUpdate > 300_000_000) {
-                    if (!model.isGameOver()) {
-                        controller.update();
-                    }
-                    lastUpdate = now;
-                }
-                render();
-            }
-        };
-        gameLoop.start();
-    }
+    private void render() {
+        int size = GameModel.SIZE;
+        int width = GameModel.WIDTH;
+        int height = GameModel.HEIGHT;
 
-    public void render() {
         // Отрисовка основного поля
-        for (int x = 0; x < GameModel.WIDTH; x++) {
-            for (int y = 0; y < GameModel.HEIGHT; y++) {
-                if (model.getMesh()[x][y] == 1) {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (mesh[x][y] == 1) {
                     grid[x][y].setFill(createBlockGradient(Color.rgb(120, 130, 160)));
                     grid[x][y].setStroke(Color.rgb(180, 190, 220));
                     grid[x][y].setStrokeWidth(1.2);
-
-                    Lighting lighting = new Lighting();
-                    Light.Distant light = new Light.Distant();
-                    light.setAzimuth(135);
-                    light.setElevation(30);
-                    lighting.setLight(light);
-                    lighting.setSurfaceScale(5.0);
-                    grid[x][y].setEffect(lighting);
+                    grid[x][y].setEffect(createLightingEffect(5.0));
                 } else {
                     grid[x][y].setFill(Color.TRANSPARENT);
                     grid[x][y].setStroke(Color.rgb(100, 110, 140, 0.3));
@@ -310,168 +219,182 @@ public class TetrisView {
         }
 
         // Отрисовка текущей фигуры
-        if (model.getCurrentShape() != null && !model.isGameOver()) {
-            Color shapeColor = model.getCurrentShape().getColor();
-            Color brighterColor = shapeColor.brighter().brighter();
-
-            for (RectanglePart rect : model.getCurrentShape().getRectangles()) {
-                int gridX = rect.x / GameModel.SIZE;
-                int gridY = rect.y / GameModel.SIZE;
-                if (gridY >= 0 && gridY < GameModel.HEIGHT && gridX >= 0 && gridX < GameModel.WIDTH) {
-                    grid[gridX][gridY].setFill(createBlockGradient(brighterColor));
-                    grid[gridX][gridY].setStroke(shapeColor.brighter());
-                    grid[gridX][gridY].setStrokeWidth(1.5);
-
-                    Lighting lighting = new Lighting();
-                    Light.Distant light = new Light.Distant();
-                    light.setAzimuth(135);
-                    light.setElevation(30);
-                    lighting.setLight(light);
-                    lighting.setSurfaceScale(8.0);
-                    grid[gridX][gridY].setEffect(lighting);
+        if (currentShape != null && !gameOver) {
+            Color shapeColor = currentShape.getColor();
+            Color brighter = shapeColor.brighter().brighter();
+            for (RectanglePart rect : currentShape.getRectangles()) {
+                int gx = rect.x / size;
+                int gy = rect.y / size;
+                if (gy >= 0 && gy < height && gx >= 0 && gx < width) {
+                    grid[gx][gy].setFill(createBlockGradient(brighter));
+                    grid[gx][gy].setStroke(shapeColor.brighter());
+                    grid[gx][gy].setStrokeWidth(1.5);
+                    grid[gx][gy].setEffect(createLightingEffect(8.0));
                 }
             }
         }
 
-        // Отрисовка следующей фигуры
-        drawNextShape();
-
-        // Обновление текста
-        scoreText.setText("Score: " + model.getScore());
-        linesText.setText("Lines: " + model.getLines());
-
-        // Проверка Game Over
-        if (model.isGameOver() && !isGameOverShown) {
-            showGameOver();
-        }
-    }
-
-    private LinearGradient createBlockGradient(Color baseColor) {
-        return new LinearGradient(
-                0, 0, 1, 1, true, CycleMethod.NO_CYCLE,
-                new Stop(0, baseColor),
-                new Stop(0.3, baseColor),
-                new Stop(0.7, baseColor.darker()),
-                new Stop(1, baseColor.darker().darker())
-        );
-    }
-
-    private void drawNextShape() {
-        // Очищаем область следующей фигуры
-        for (int x = 0; x < 4; x++) {
-            for (int y = 0; y < 4; y++) {
+        // Очистка и отрисовка следующей фигуры в сетке 6x4
+        for (int x = 0; x < NEXT_COLS; x++) {
+            for (int y = 0; y < NEXT_ROWS; y++) {
                 nextShapeGrid[x][y].setFill(Color.TRANSPARENT);
+                nextShapeGrid[x][y].setStroke(Color.rgb(120, 130, 160, 0.5));
                 nextShapeGrid[x][y].setEffect(null);
             }
         }
 
-        // Рисуем следующую фигуру
-        if (model.getNextShape() != null) {
-            Color shapeColor = model.getNextShape().getColor();
-            Color brighterColor = shapeColor.brighter().brighter();
+        if (nextShape != null) {
+            Color shapeColor = nextShape.getColor();
+            Color brighter = shapeColor.brighter().brighter();
 
-            for (RectanglePart rect : model.getNextShape().getRectangles()) {
-                int gridX = (rect.x / GameModel.SIZE) - (GameModel.WIDTH / 2 - 2);
-                int gridY = rect.y / GameModel.SIZE;
-                if (gridX >= 0 && gridX < 4 && gridY >= 0 && gridY < 4) {
-                    nextShapeGrid[gridX][gridY].setFill(createBlockGradient(brighterColor));
+            // Вычисляем смещение для центрирования фигуры в области 6x4
+            int shapeWidth = 4;
+            int offsetX = (NEXT_COLS - shapeWidth) / 2; // (6-4)/2 = 1 - центрирование
 
-                    Lighting lighting = new Lighting();
-                    Light.Distant light = new Light.Distant();
-                    light.setAzimuth(135);
-                    light.setElevation(30);
-                    lighting.setLight(light);
-                    lighting.setSurfaceScale(5.0);
-                    nextShapeGrid[gridX][gridY].setEffect(lighting);
+            for (RectanglePart rect : nextShape.getRectangles()) {
+                int gx = (rect.x / size) - (width / 2 - 2) + offsetX;
+                int gy = rect.y / size;
+                if (gx >= 0 && gx < NEXT_COLS && gy >= 0 && gy < NEXT_ROWS) {
+                    nextShapeGrid[gx][gy].setFill(createBlockGradient(brighter));
+                    nextShapeGrid[gx][gy].setEffect(createLightingEffect(5.0));
                 }
             }
         }
+
+        scoreText.setText("Score: " + score);
+        linesText.setText("Lines: " + lines);
+
+        if (gameOver && !isGameOverShown) {
+            showGameOver();
+            isGameOverShown = true;
+        } else if (!gameOver && isGameOverShown) {
+            hideGameOverMessage();
+            isGameOverShown = false;
+        }
+    }
+
+    private LinearGradient createBlockGradient(Color baseColor) {
+        return new LinearGradient(0, 0, 1, 1, true, CycleMethod.NO_CYCLE,
+                new Stop(0, baseColor),
+                new Stop(0.3, baseColor),
+                new Stop(0.7, baseColor.darker()),
+                new Stop(1, baseColor.darker().darker()));
+    }
+
+    private Lighting createLightingEffect(double surfaceScale) {
+        Lighting lighting = new Lighting();
+        Light.Distant light = new Light.Distant();
+        light.setAzimuth(135);
+        light.setElevation(30);
+        lighting.setLight(light);
+        lighting.setSurfaceScale(surfaceScale);
+        return lighting;
     }
 
     private void showGameOver() {
-        isGameOverShown = true;
-
-        VBox gameOverBox = new VBox(15);
-        gameOverBox.setAlignment(Pos.CENTER);
-        gameOverBox.setLayoutX(GameModel.XMAX / 2 - 150);
-        gameOverBox.setLayoutY(GameModel.YMAX / 2 - 80);
-        gameOverBox.setPrefWidth(300);
-
+        VBox box = new VBox(15);
+        box.setAlignment(Pos.CENTER);
+        box.setLayoutX(GameModel.XMAX / 2 - 150);
+        box.setLayoutY(GameModel.YMAX / 2 - 80);
+        box.setPrefWidth(300);
+        box.setUserData("game_over");
         gameOverText = new Text("GAME OVER");
         gameOverText.setFont(Font.font("Arial", FontWeight.BOLD, 44));
         gameOverText.setFill(Color.rgb(255, 80, 80));
         gameOverText.setEffect(new DropShadow(10, Color.rgb(255, 0, 0, 0.7)));
         gameOverText.setTextAlignment(TextAlignment.CENTER);
+        Text hint = new Text("Press  R  to Restart\nPress ESC to Menu");
+        hint.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        hint.setFill(Color.rgb(255, 255, 100));
+        hint.setEffect(new DropShadow(4, Color.rgb(0, 0, 0, 0.5)));
+        hint.setTextAlignment(TextAlignment.CENTER);
+        box.getChildren().addAll(gameOverText, hint);
+        gameArea.getChildren().add(box);
+    }
 
-        gameOverHintText = new Text("Press  R  to Restart\nPress ESC to Menu");
-        gameOverHintText.setFont(Font.font("Arial", FontWeight.BOLD, 16));
-        gameOverHintText.setFill(Color.rgb(255, 255, 100));
-        gameOverHintText.setEffect(new DropShadow(4, Color.rgb(0, 0, 0, 0.5)));
-        gameOverHintText.setTextAlignment(TextAlignment.CENTER);
+    public void hideGameOverMessage() {
+        gameArea.getChildren().removeIf(node -> node instanceof VBox && "game_over".equals(node.getUserData()));
+    }
 
-        gameOverBox.getChildren().addAll(gameOverText, gameOverHintText);
-        gameArea.getChildren().add(gameOverBox);
+    public void showPauseMessage(boolean paused) {
+        if (paused && pauseText == null) {
+            pauseText = new Text("PAUSED\nPress ESC to resume");
+            pauseText.setFont(Font.font("Arial", FontWeight.BOLD, 30));
+            pauseText.setFill(Color.YELLOW);
+            pauseText.setTextAlignment(TextAlignment.CENTER);
+            pauseText.setX(GameModel.XMAX / 2 - 100);
+            pauseText.setY(GameModel.YMAX / 2);
+            pauseText.setUserData("pause");
+            gameArea.getChildren().add(pauseText);
+        } else if (!paused && pauseText != null) {
+            gameArea.getChildren().remove(pauseText);
+            pauseText = null;
+        }
+    }
 
-        controller.handleGameOver();
+    public void hidePauseMessage() {
+        if (pauseText != null) {
+            gameArea.getChildren().remove(pauseText);
+            pauseText = null;
+        }
+    }
 
-        javafx.animation.AnimationTimer blinkTimer = new javafx.animation.AnimationTimer() {
-            private long lastBlink = 0;
-            private boolean visible = true;
-
+    public void startGameLoop(Runnable onUpdate) {
+        if (gameLoop != null) gameLoop.stop();
+        gameLoop = new AnimationTimer() {
+            private long lastUpdate = 0;
             @Override
             public void handle(long now) {
-                if (lastBlink == 0) {
-                    lastBlink = now;
+                if (lastUpdate == 0) {
+                    lastUpdate = now;
                     return;
                 }
-                if (now - lastBlink > 500_000_000) {
-                    visible = !visible;
-                    gameOverText.setVisible(visible);
-                    lastBlink = now;
+                if (now - lastUpdate > 300_000_000) {
+                    onUpdate.run();
+                    lastUpdate = now;
                 }
             }
         };
-        blinkTimer.start();
+        gameLoop.start();
     }
 
-    private void restartGame() {
-        System.out.println("Restarting game...");
-
-        if (gameLoop != null) {
-            gameLoop.stop();
-        }
-
-        model = new GameModel();
-        controller = new GameController(model, this);
-
-        gameArea.getChildren().removeIf(node -> node instanceof VBox);
-
-        isGameOverShown = false;
-
-        lastUpdate = 0;
-        startGameLoop();
-
-        render();
+    public void stopGameLoop() {
+        if (gameLoop != null) gameLoop.stop();
     }
 
-    public void start() {
-        stage.setScene(scene);
+    public void requestFocusForWindow() {
+        Platform.runLater(() -> {
+            if (stage.getScene() != null && stage.getScene().getWindow() != null) {
+                stage.getScene().getWindow().requestFocus();
+            }
+            stage.requestFocus();
+            System.out.println("Focus requested on game window");
+        });
+    }
+
+    public void show() {
         stage.setTitle("Tetris Premium");
         stage.setResizable(false);
-        stage.show();
-        System.out.println("Game started - click on game area to enable controls");
+        if (!stage.isShowing()) { stage.show(); }
+        requestFocusForWindow();
+        scene.getRoot().requestFocus();
     }
 
     public void returnToMenu() {
-        System.out.println("Returning to menu...");
-        if (gameLoop != null) {
-            gameLoop.stop();
-        }
+        stopGameLoop();
+        scene.setOnKeyPressed(null);
+
         MainMenuView menu = new MainMenuView(stage);
         stage.setScene(menu.getScene());
+
+        Platform.runLater(() -> {
+            if (stage.getScene() != null && stage.getScene().getWindow() != null) {
+                stage.getScene().getWindow().requestFocus();
+            }
+        });
     }
 
-    public void update() {
-        render();
+    public Scene getScene() {
+        return scene;
     }
 }

@@ -3,7 +3,9 @@ package tetris.controller;
 import tetris.model.GameModel;
 import tetris.model.HighScoresManager;
 import tetris.view.TetrisView;
+import javafx.scene.Scene;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.input.KeyCode;
 import javafx.application.Platform;
 import java.util.Optional;
 
@@ -12,119 +14,127 @@ public class GameController {
     private TetrisView view;
     private HighScoresManager highScores;
     private boolean paused;
+    private boolean gameOverHandled;
 
     public GameController(GameModel model, TetrisView view) {
         this.model = model;
         this.view = view;
         this.highScores = new HighScoresManager();
         this.paused = false;
+        this.gameOverHandled = false;
+    }
+
+    public void setupKeyboardControls(Scene scene) {
+        scene.setOnKeyPressed(event -> {
+            KeyCode code = event.getCode();
+            System.out.println("Key pressed: " + code);
+
+            if (model.isGameOver()) {
+                if (code == KeyCode.R) restartGame();
+                else if (code == KeyCode.ESCAPE) view.returnToMenu();
+                event.consume();
+                return;
+            }
+
+            switch (code) {
+                case LEFT -> moveLeft();
+                case RIGHT -> moveRight();
+                case DOWN -> moveDown();
+                case UP -> rotate();
+                case SPACE -> hardDrop();
+                case R -> restartGame();
+                case ESCAPE -> pause();
+                default -> {}
+            }
+            event.consume();
+        });
     }
 
     public void moveLeft() {
         if (!paused && !model.isGameOver()) {
             model.moveLeft();
-            view.update();
+            view.update(model);
         }
     }
 
     public void moveRight() {
         if (!paused && !model.isGameOver()) {
             model.moveRight();
-            view.update();
+            view.update(model);
         }
     }
 
     public void moveDown() {
         if (!paused && !model.isGameOver()) {
             model.moveDown();
-            view.update();
+            view.update(model);
         }
     }
 
     public void rotate() {
         if (!paused && !model.isGameOver()) {
             model.rotateShape();
-            view.update();
+            view.update(model);
         }
     }
 
     public void hardDrop() {
         if (!paused && !model.isGameOver()) {
-            System.out.println("HARD DROP - starting");
-            while (model.moveDown()) {
-                // Быстрое падение до конца
-            }
-            System.out.println("HARD DROP - finished");
-            view.update();
+            while (model.moveDown()) { }
+            view.update(model);
         }
     }
 
     public void update() {
         if (!paused && !model.isGameOver()) {
             model.moveDown();
-            view.update();
+            view.update(model);
         }
     }
 
     public void pause() {
         if (!model.isGameOver()) {
             paused = !paused;
-            if (paused) {
-                System.out.println("Game Paused - Press ESC to resume");
-            } else {
-                System.out.println("Game Resumed");
-            }
+            view.showPauseMessage(paused);
         }
+    }
+
+    public void restartGame() {
+        model.initGame();
+        paused = false;
+        gameOverHandled = false;
+        view.update(model);
+        view.hideGameOverMessage();
+        view.hidePauseMessage();
+        view.requestFocusForWindow();
     }
 
     public void handleGameOver() {
-        if (model.isGameOver()) {
-            int finalScore = model.getScore();
-            System.out.println("=== GAME OVER ===");
-            System.out.println("Final score: " + finalScore);
+        // Защита от повторного вызова
+        if (gameOverHandled) return;
 
-            // ВСЕГДА показываем диалог для нового рекорда, если это высокий результат
-            if (highScores.isHighScore(finalScore)) {
-                System.out.println("NEW HIGH SCORE! Showing dialog...");
+        // Проверяем, что игра действительно окончена
+        if (!model.isGameOver()) return;
 
-                // Запускаем диалог в потоке JavaFX
-                Platform.runLater(() -> {
-                    TextInputDialog dialog = new TextInputDialog("Player");
-                    dialog.setTitle("New High Score!");
-                    dialog.setHeaderText("Congratulations! You got " + finalScore + " points!");
-                    dialog.setContentText("Enter your name:");
+        gameOverHandled = true;
 
-                    // Показываем диалог и ждем результат
-                    Optional<String> result = dialog.showAndWait();
+        int finalScore = model.getScore();
+        System.out.println("Game Over! Final score: " + finalScore);
 
-                    String playerName;
-                    if (result.isPresent() && !result.get().trim().isEmpty()) {
-                        playerName = result.get().trim();
-                    } else {
-                        playerName = "Anonymous";
-                    }
-
-                    // Сохраняем рекорд
-                    highScores.addScore(playerName, finalScore);
-                    System.out.println("Score saved for: " + playerName);
-
-                    // Проверяем, что рекорд действительно сохранился
-                    System.out.println("Top scores now:");
-                    for (var entry : highScores.getTopScores()) {
-                        System.out.println("  " + entry.name + ": " + entry.score);
-                    }
-                });
-            } else {
-                System.out.println("Not a high score. Score: " + finalScore);
-                System.out.println("Need at least " + (highScores.getTopScores().isEmpty() ? 0 :
-                        highScores.getTopScores().get(highScores.getTopScores().size() - 1).score) + " points for top 10");
-            }
+        if (highScores.isHighScore(finalScore)) {
+            System.out.println("New high score! Showing dialog...");
+            Platform.runLater(() -> {
+                TextInputDialog dialog = new TextInputDialog("Player");
+                dialog.setTitle("New High Score!");
+                dialog.setHeaderText("Congratulations! You got " + finalScore + " points!");
+                dialog.setContentText("Enter your name:");
+                Optional<String> result = dialog.showAndWait();
+                String playerName = result.filter(s -> !s.trim().isEmpty()).orElse("Anonymous");
+                highScores.addScore(playerName, finalScore);
+                System.out.println("Score saved for: " + playerName);
+            });
+        } else {
+            System.out.println("Not a high score.");
         }
-    }
-
-    public void newGame() {
-        model.initGame();
-        paused = false;
-        view.update();
     }
 }

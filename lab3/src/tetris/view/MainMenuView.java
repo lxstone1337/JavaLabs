@@ -1,5 +1,7 @@
 package tetris.view;
 
+import tetris.model.GameModel;
+import tetris.controller.GameController;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -17,7 +19,6 @@ import javafx.stage.Stage;
 public class MainMenuView {
     private Stage stage;
     private Scene scene;
-    private VBox root;
 
     public MainMenuView(Stage stage) {
         this.stage = stage;
@@ -25,19 +26,14 @@ public class MainMenuView {
     }
 
     private void createMenu() {
-        root = new VBox(25);
+        VBox root = new VBox(25);
         root.setAlignment(Pos.CENTER);
-
-        // Красивый градиентный фон
-        LinearGradient gradient = new LinearGradient(
-                0, 0, 1, 1, true, CycleMethod.NO_CYCLE,
+        LinearGradient gradient = new LinearGradient(0, 0, 1, 1, true, CycleMethod.NO_CYCLE,
                 new Stop(0, Color.rgb(20, 30, 50)),
                 new Stop(0.5, Color.rgb(40, 20, 60)),
-                new Stop(1, Color.rgb(15, 25, 45))
-        );
+                new Stop(1, Color.rgb(15, 25, 45)));
         root.setBackground(new javafx.scene.layout.Background(
-                new javafx.scene.layout.BackgroundFill(gradient, null, null)
-        ));
+                new javafx.scene.layout.BackgroundFill(gradient, null, null)));
 
         Text title = new Text("TETRIS");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 72));
@@ -49,50 +45,41 @@ public class MainMenuView {
         Button aboutBtn = createStyledButton("ABOUT", "#FF9800");
         Button exitBtn = createStyledButton("EXIT", "#f44336");
 
-        root.getChildren().addAll(title, newGameBtn, highScoresBtn, aboutBtn, exitBtn);
-        scene = new Scene(root, 500, 600);
-
         newGameBtn.setOnAction(e -> startNewGame());
         highScoresBtn.setOnAction(e -> showHighScores());
         aboutBtn.setOnAction(e -> showAbout());
         exitBtn.setOnAction(e -> System.exit(0));
+
+        root.getChildren().addAll(title, newGameBtn, highScoresBtn, aboutBtn, exitBtn);
+        scene = new Scene(root, 500, 600);
     }
 
     private Button createStyledButton(String text, String color) {
         Button btn = new Button(text);
         btn.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-        btn.setStyle(
-                "-fx-background-color: " + color + ";" +
-                        "-fx-text-fill: white;" +
-                        "-fx-padding: 12 35;" +
-                        "-fx-cursor: hand;" +
-                        "-fx-background-radius: 25;" +
-                        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 3);"
-        );
-
-        btn.setOnMouseEntered(e -> btn.setStyle(
-                "-fx-background-color: " + adjustColor(color) + ";" +
-                        "-fx-text-fill: white;" +
-                        "-fx-padding: 12 35;" +
-                        "-fx-cursor: hand;" +
-                        "-fx-background-radius: 25;" +
-                        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.7), 15, 0, 0, 5);"
-        ));
-
-        btn.setOnMouseExited(e -> btn.setStyle(
-                "-fx-background-color: " + color + ";" +
-                        "-fx-text-fill: white;" +
-                        "-fx-padding: 12 35;" +
-                        "-fx-cursor: hand;" +
-                        "-fx-background-radius: 25;" +
-                        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 3);"
-        ));
-
+        btn.setStyle("-fx-background-color: " + color + ";" +
+                "-fx-text-fill: white;" +
+                "-fx-padding: 12 35;" +
+                "-fx-cursor: hand;" +
+                "-fx-background-radius: 25;" +
+                "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 3);");
+        btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-color: " + adjustColor(color) + ";" +
+                "-fx-text-fill: white;" +
+                "-fx-padding: 12 35;" +
+                "-fx-cursor: hand;" +
+                "-fx-background-radius: 25;" +
+                "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.7), 15, 0, 0, 5);"));
+        btn.setOnMouseExited(e -> btn.setStyle("-fx-background-color: " + color + ";" +
+                "-fx-text-fill: white;" +
+                "-fx-padding: 12 35;" +
+                "-fx-cursor: hand;" +
+                "-fx-background-radius: 25;" +
+                "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 3);"));
         return btn;
     }
 
     private String adjustColor(String color) {
-        switch(color) {
+        switch (color) {
             case "#4CAF50": return "#45a049";
             case "#2196F3": return "#0b7dda";
             case "#FF9800": return "#e68900";
@@ -102,8 +89,17 @@ public class MainMenuView {
     }
 
     private void startNewGame() {
+        GameModel model = new GameModel();
         TetrisView gameView = new TetrisView(stage);
-        gameView.start();
+        GameController controller = new GameController(model, gameView);
+
+        stage.setScene(gameView.getScene());
+        controller.setupKeyboardControls(gameView.getScene());
+
+        gameView.startGameLoop(() -> {controller.update();controller.handleGameOver();});
+        gameView.show();
+        gameView.update(model);
+        gameView.requestFocusForWindow();
     }
 
     private void showHighScores() {
@@ -116,7 +112,5 @@ public class MainMenuView {
         aboutView.show();
     }
 
-    public Scene getScene() {
-        return scene;
-    }
+    public Scene getScene() { return scene; }
 }
