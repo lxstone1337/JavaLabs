@@ -3,7 +3,6 @@ package calculator.commands;
 import calculator.CalcContext;
 import calculator.CalcException;
 import calculator.Command;
-
 public class Multiply implements Command {
     @Override
     public void execute(String[] args, CalcContext context) throws CalcException {
