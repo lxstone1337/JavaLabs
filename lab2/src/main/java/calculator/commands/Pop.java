@@ -10,6 +10,6 @@ public class Pop implements Command {
         if (args.length != 0) {
             throw new CalcException("POP command takes no arguments");
         }
-        context.pop(); // just discard
+        context.pop();
     }
 }
