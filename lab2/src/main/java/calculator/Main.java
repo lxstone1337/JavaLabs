@@ -20,8 +20,8 @@ public class Main {
                 }
             }
 
-            //обработчик для файла (мах размер 5мб, 3 файла ротации)
-            FileHandler fileHandler = new FileHandler("logs/calculator.log", 5 * 1024 * 1024, 3, true);
+            //файл для логов
+            FileHandler fileHandler = new FileHandler("logs/calculator.log", true);
             fileHandler.setLevel(Level.ALL);
             fileHandler.setFormatter(new SimpleFormatter() {
                 @Override

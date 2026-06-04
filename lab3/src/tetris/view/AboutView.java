@@ -15,7 +15,7 @@ import javafx.scene.effect.DropShadow;
 import javafx.stage.Stage;
 
 public class AboutView {
-    private Stage stage;
+    private final Stage stage;
 
     public AboutView(Stage stage) {
         this.stage = stage;
@@ -26,7 +26,6 @@ public class AboutView {
         root.setAlignment(Pos.CENTER);
         root.setStyle("-fx-padding: 40 20 20 20;");
 
-        // Градиентный фон как в главном меню
         LinearGradient gradient = new LinearGradient(0, 0, 1, 1, true, CycleMethod.NO_CYCLE,
                 new Stop(0, Color.rgb(20, 30, 50)),
                 new Stop(0.5, Color.rgb(40, 20, 60)),
@@ -47,19 +46,20 @@ public class AboutView {
 
         // Описание
         Text description = new Text(
-                "Classic Tetris game on Java\n\n" +
-                        " Features:\n" +
-                        "  • Score and lines tracking\n" +
-                        "  • High scores saved locally\n" +
-                        " Controls:\n" +
-                        "  ← →   – Move left/right\n" +
-                        "  ↓     – Move down\n" +
-                        "  ↑     – Rotate\n" +
-                        "  SPACE – Hard drop\n" +
-                        "  R     – Restart game\n" +
-                        "  ESC   – Pause / Resume\n\n" +
-                        " Architecture: MVC Pattern\n" +
-                        " Developer: Course Project"
+                """
+                        Tetris game on Java
+                        
+                         Features:
+                          • Score and lines tracking
+                          • High scores saved locally
+                         Controls:
+                          ← →   – Move left/right
+                          ↓     – Move down
+                          ↑     – Rotate
+                          SPACE – Hard drop
+                          R     – Restart game
+                          ESC   – Pause / Resume
+                """
         );
         description.setFont(Font.font("Consolas", FontWeight.NORMAL, 13));
         description.setFill(Color.rgb(220, 220, 240));

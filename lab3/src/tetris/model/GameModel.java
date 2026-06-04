@@ -79,11 +79,8 @@ public class GameModel {
 
     public void rotateShape() {
         if (gameOver) return;
-        Shape rotated = currentShape.clone();
-        rotated.rotate();
         currentShape.rotate();
         if (checkCollision()) {
-            // откат
             currentShape.rotate();
             currentShape.rotate();
             currentShape.rotate();

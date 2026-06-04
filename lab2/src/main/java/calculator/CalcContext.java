@@ -24,6 +24,7 @@ public class CalcContext {
         return stack.peek();
     }
 
+    //для тестов
     public boolean isStackEmpty() {
         return stack.isEmpty();
     }
@@ -36,6 +37,7 @@ public class CalcContext {
         parameters.put(name, value);
     }
 
+    //для тестов
     public boolean isParameterDefined(String name) {
         return parameters.containsKey(name);
     }

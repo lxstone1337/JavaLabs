@@ -16,8 +16,8 @@ import javafx.scene.effect.DropShadow;
 import javafx.stage.Stage;
 
 public class HighScoresView {
-    private Stage stage;
-    private HighScoresManager highScores;
+    private final Stage stage;
+    private final HighScoresManager highScores;
 
     public HighScoresView(Stage stage) {
         this.stage = stage;
@@ -29,7 +29,6 @@ public class HighScoresView {
         root.setAlignment(Pos.CENTER);
         root.setStyle("-fx-padding: 30;");
 
-        // Градиентный фон как в главном меню
         LinearGradient gradient = new LinearGradient(0, 0, 1, 1, true, CycleMethod.NO_CYCLE,
                 new Stop(0, Color.rgb(20, 30, 50)),
                 new Stop(0.5, Color.rgb(40, 20, 60)),
@@ -100,7 +99,7 @@ public class HighScoresView {
 
         root.getChildren().addAll(title, scoresBox, backBtn);
 
-        Scene scene = new Scene(root, 500, 600);  // ← размер как в главном меню
+        Scene scene = new Scene(root, 500, 600);
         stage.setScene(scene);
         stage.setTitle("High Scores");
         stage.setResizable(false);

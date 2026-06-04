@@ -13,14 +13,12 @@ public class HighScoresManager {
     }
 
     public void addScore(String name, int score) {
-        System.out.println("Adding score: " + name + " - " + score);
         scores.add(new ScoreEntry(name, score));
         scores.sort((a, b) -> Integer.compare(b.score, a.score));
         if (scores.size() > 10) {
             scores = scores.subList(0, 10);
         }
         saveScores();
-        System.out.println("Score saved. Total scores: " + scores.size());
     }
 
     public List<ScoreEntry> getTopScores() {
@@ -29,11 +27,9 @@ public class HighScoresManager {
 
     public boolean isHighScore(int score) {
         if (scores.size() < 10) {
-            System.out.println("Is high score: true (less than 10 scores)");
             return true;
         }
         boolean isHigh = score > scores.get(scores.size() - 1).score;
-        System.out.println("Is high score: " + isHigh + " (score: " + score + ", lowest: " + scores.get(scores.size() - 1).score + ")");
         return isHigh;
     }
 
@@ -54,11 +50,9 @@ public class HighScoresManager {
                         int score = Integer.parseInt(parts[1]);
                         scores.add(new ScoreEntry(name, score));
                     } catch (NumberFormatException e) {
-                        System.out.println("Skipping invalid line: " + line);
                     }
                 }
             }
-            System.out.println("Loaded " + scores.size() + " scores from file");
         } catch (IOException e) {
             System.out.println("Error loading scores: " + e.getMessage());
         }
@@ -70,7 +64,6 @@ public class HighScoresManager {
                 writer.write(entry.name + "|" + entry.score);
                 writer.newLine();
             }
-            System.out.println("Saved " + scores.size() + " scores to file");
         } catch (IOException e) {
             System.out.println("Error saving scores: " + e.getMessage());
             e.printStackTrace();

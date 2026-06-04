@@ -27,7 +27,6 @@ public class GameController {
     public void setupKeyboardControls(Scene scene) {
         scene.setOnKeyPressed(event -> {
             KeyCode code = event.getCode();
-            System.out.println("Key pressed: " + code);
 
             if (model.isGameOver()) {
                 if (code == KeyCode.R) restartGame();
@@ -110,10 +109,8 @@ public class GameController {
     }
 
     public void handleGameOver() {
-        // Защита от повторного вызова
         if (gameOverHandled) return;
 
-        // Проверяем, что игра действительно окончена
         if (!model.isGameOver()) return;
 
         gameOverHandled = true;
@@ -121,20 +118,14 @@ public class GameController {
         int finalScore = model.getScore();
         System.out.println("Game Over! Final score: " + finalScore);
 
-        if (highScores.isHighScore(finalScore)) {
-            System.out.println("New high score! Showing dialog...");
-            Platform.runLater(() -> {
-                TextInputDialog dialog = new TextInputDialog("Player");
-                dialog.setTitle("New High Score!");
-                dialog.setHeaderText("Congratulations! You got " + finalScore + " points!");
-                dialog.setContentText("Enter your name:");
-                Optional<String> result = dialog.showAndWait();
-                String playerName = result.filter(s -> !s.trim().isEmpty()).orElse("Anonymous");
-                highScores.addScore(playerName, finalScore);
-                System.out.println("Score saved for: " + playerName);
-            });
-        } else {
-            System.out.println("Not a high score.");
-        }
+        Platform.runLater(() -> {
+            TextInputDialog dialog = new TextInputDialog("Player");
+            dialog.setTitle("Score");
+            dialog.setHeaderText("You got " + finalScore + " points!");
+            dialog.setContentText("Enter your name:");
+            Optional<String> result = dialog.showAndWait();
+            String playerName = result.filter(s -> !s.trim().isEmpty()).orElse("Anonymous");
+            highScores.addScore(playerName, finalScore);
+        });
     }
 }
