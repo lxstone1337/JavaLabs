@@ -41,8 +41,8 @@ public class AboutView {
         title.setEffect(new DropShadow(8, Color.rgb(255, 0, 0, 0.5)));
 
         Text info = new Text(
-                "Tetris Classic\n\n" +
-                        "Version 1.0\n\n" +
+                "Tetris\n\n" +
+                        "Ver inf\n\n" +
                         "Controls:\n" +
                         "← → - Move\n" +
                         "↓ - Down\n" +
