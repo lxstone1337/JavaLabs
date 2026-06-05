@@ -31,15 +31,5 @@ public class ShapeO extends Shape {
 
     @Override
     public void rotate() {
-        // O фигура не вращается
-    }
-
-    @Override
-    public Shape clone() {
-        ShapeO clone = new ShapeO();
-        clone.x = this.x;
-        clone.y = this.y;
-        clone.updateRectangles();
-        return clone;
     }
 }

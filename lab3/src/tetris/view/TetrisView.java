@@ -49,7 +49,10 @@ public class TetrisView {
     private static final int NEXT_COLS = 6;
     private static final int NEXT_ROWS = 4;
     private static final int CELL_SIZE = 30;
+    private static final int RIGHT_PANEL_PADDING = 40;
+    private static final int RIGHT_PANEL_EXTRA = 80;
 
+    private static final int RIGHT_PANEL_WIDTH = (NEXT_COLS * CELL_SIZE) + RIGHT_PANEL_PADDING + RIGHT_PANEL_EXTRA;
 
     public TetrisView(Stage stage, MainMenuView mainMenuView) {
         this.stage = stage;
@@ -76,8 +79,10 @@ public class TetrisView {
         int size = GameModel.SIZE;
         int width = GameModel.WIDTH;
         int height = GameModel.HEIGHT;
+
         int nextWidth = NEXT_COLS * CELL_SIZE;
         int nextHeight = NEXT_ROWS * CELL_SIZE;
+
         int xmax = size * width;
         int ymax = size * height;
 
@@ -106,7 +111,9 @@ public class TetrisView {
 
         VBox rightPanel = new VBox(20);
         rightPanel.setStyle("-fx-padding: 20 30 20 30; -fx-background-color: rgba(0,0,0,0.3);");
-        rightPanel.setPrefWidth(240);
+        rightPanel.setPrefWidth(RIGHT_PANEL_WIDTH);
+        rightPanel.setMinWidth(RIGHT_PANEL_WIDTH);
+        rightPanel.setMaxWidth(RIGHT_PANEL_WIDTH);
         rightPanel.setAlignment(Pos.TOP_CENTER);
 
         Text gameTitle = new Text("TETRIS");
@@ -132,6 +139,8 @@ public class TetrisView {
         Pane nextShapeArea = new Pane();
         nextShapeArea.setStyle("-fx-background-color: rgba(20, 30, 50, 0.8); -fx-border-color: rgba(255,255,255,0.3); -fx-border-width: 2;");
         nextShapeArea.setPrefSize(nextWidth, nextHeight);
+        nextShapeArea.setMinSize(nextWidth, nextHeight);
+        nextShapeArea.setMaxSize(nextWidth, nextHeight);
         nextShapeArea.setEffect(new DropShadow(5, Color.rgb(0, 0, 0, 0.5)));
 
         for (int x = 0; x < NEXT_COLS; x++) {
@@ -177,7 +186,7 @@ public class TetrisView {
         BorderPane.setAlignment(rightPanel, Pos.TOP_RIGHT);
         BorderPane.setMargin(rightPanel, Insets.EMPTY);
 
-        scene = new Scene(root, xmax + 280, ymax);
+        scene = new Scene(root, xmax + RIGHT_PANEL_WIDTH, ymax);
         scene.setFill(Color.TRANSPARENT);
     }
 
@@ -369,6 +378,7 @@ public class TetrisView {
             }
         });
     }
+
     public Scene getScene() {
         return scene;
     }

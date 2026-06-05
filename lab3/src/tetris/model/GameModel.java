@@ -79,6 +79,7 @@ public class GameModel {
 
     public void rotateShape() {
         if (gameOver) return;
+
         currentShape.rotate();
         if (checkCollision()) {
             currentShape.rotate();

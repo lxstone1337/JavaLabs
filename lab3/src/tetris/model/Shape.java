@@ -28,7 +28,6 @@ public abstract class Shape {
     }
 
     public abstract void rotate();
-    public abstract Shape clone();
 
     public List<RectanglePart> getRectangles() { return rectangles; }
     public Color getColor() { return color; }

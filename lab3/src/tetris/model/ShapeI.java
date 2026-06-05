@@ -37,15 +37,4 @@ public class ShapeI extends Shape {
         shapeMatrix = shapes[rotation];
         updateRectangles();
     }
-
-    @Override
-    public Shape clone() {
-        ShapeI clone = new ShapeI();
-        clone.rotation = this.rotation;
-        clone.shapeMatrix = this.shapeMatrix;
-        clone.x = this.x;
-        clone.y = this.y;
-        clone.updateRectangles();
-        return clone;
-    }
 }
