@@ -1,7 +1,5 @@
 package tetris.view;
 
-import tetris.model.GameModel;
-import tetris.controller.GameController;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -15,20 +13,25 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.effect.DropShadow;
 import javafx.stage.Stage;
-//l
+
 public class MainMenuView {
     private Stage stage;
     private Scene scene;
 
+    private Button newGameBtn;
+    private Button highScoresBtn;
+    private Button aboutBtn;
+    private Button exitBtn;
+
     public MainMenuView(Stage stage) {
         this.stage = stage;
         createMenu();
-        stage.setTitle("Menu");
     }
 
     private void createMenu() {
         VBox root = new VBox(25);
         root.setAlignment(Pos.CENTER);
+
         LinearGradient gradient = new LinearGradient(0, 0, 1, 1, true, CycleMethod.NO_CYCLE,
                 new Stop(0, Color.rgb(20, 30, 50)),
                 new Stop(0.5, Color.rgb(40, 20, 60)),
@@ -41,18 +44,34 @@ public class MainMenuView {
         title.setFill(Color.rgb(255, 100, 100));
         title.setEffect(new DropShadow(15, Color.rgb(255, 0, 0, 0.7)));
 
-        Button newGameBtn = createStyledButton("NEW GAME", "#4CAF50");
-        Button highScoresBtn = createStyledButton("HIGH SCORES", "#2196F3");
-        Button aboutBtn = createStyledButton("ABOUT", "#FF9800");
-        Button exitBtn = createStyledButton("EXIT", "#f44336");
+        newGameBtn = createStyledButton("NEW GAME", "#4CAF50");
+        highScoresBtn = createStyledButton("HIGH SCORES", "#2196F3");
+        aboutBtn = createStyledButton("ABOUT", "#FF9800");
+        exitBtn = createStyledButton("EXIT", "#f44336");
 
-        newGameBtn.setOnAction(e -> startNewGame());
-        highScoresBtn.setOnAction(e -> showHighScores());
-        aboutBtn.setOnAction(e -> showAbout());
+        newGameBtn.setOnAction(e -> {});
+        highScoresBtn.setOnAction(e -> {});
+        aboutBtn.setOnAction(e -> {});
         exitBtn.setOnAction(e -> System.exit(0));
 
         root.getChildren().addAll(title, newGameBtn, highScoresBtn, aboutBtn, exitBtn);
         scene = new Scene(root, 500, 600);
+    }
+
+    public void setOnNewGame(Runnable action) {
+        newGameBtn.setOnAction(e -> action.run());
+    }
+
+    public void setOnHighScores(Runnable action) {
+        highScoresBtn.setOnAction(e -> action.run());
+    }
+
+    public void setOnAbout(Runnable action) {
+        aboutBtn.setOnAction(e -> action.run());
+    }
+
+    public void setOnExit(Runnable action) {
+        exitBtn.setOnAction(e -> action.run());
     }
 
     private Button createStyledButton(String text, String color) {
@@ -89,29 +108,7 @@ public class MainMenuView {
         }
     }
 
-    private void startNewGame() {
-        GameModel model = new GameModel();
-        TetrisView gameView = new TetrisView(stage);
-        GameController controller = new GameController(model, gameView);
-
-        stage.setScene(gameView.getScene());
-        controller.setupKeyboardControls(gameView.getScene());
-
-        gameView.startGameLoop(() -> {controller.update();controller.handleGameOver();});
-        gameView.show();
-        gameView.update(model);
-        gameView.requestFocusForWindow();
+    public Scene getScene() {
+        return scene;
     }
-
-    private void showHighScores() {
-        HighScoresView scoresView = new HighScoresView(stage);
-        scoresView.show();
-    }
-
-    private void showAbout() {
-        AboutView aboutView = new AboutView(stage);
-        aboutView.show();
-    }
-
-    public Scene getScene() { return scene; }
 }

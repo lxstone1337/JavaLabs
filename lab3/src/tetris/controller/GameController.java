@@ -3,6 +3,7 @@ package tetris.controller;
 import tetris.model.GameModel;
 import tetris.model.HighScoresManager;
 import tetris.view.TetrisView;
+import javafx.animation.AnimationTimer;
 import javafx.scene.Scene;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.KeyCode;
@@ -15,6 +16,7 @@ public class GameController {
     private HighScoresManager highScores;
     private boolean paused;
     private boolean gameOverHandled;
+    private AnimationTimer gameLoop;
 
     public GameController(GameModel model, TetrisView view) {
         this.model = model;
@@ -22,6 +24,41 @@ public class GameController {
         this.highScores = new HighScoresManager();
         this.paused = false;
         this.gameOverHandled = false;
+        this.gameLoop = null;
+    }
+
+    public void startGameLoop() {
+        if (gameLoop != null) {
+            gameLoop.stop();
+        }
+
+        gameLoop = new AnimationTimer() {
+            private long lastUpdate = 0;
+
+            @Override
+            public void handle(long now) {
+
+                if (lastUpdate == 0) {
+                    lastUpdate = now;
+                    return;
+                }
+
+                if (now - lastUpdate > 300_000_000) {
+                    update();
+                    lastUpdate = now;
+                }
+            }
+        };
+        gameLoop.start();
+        System.out.println("Game loop started");
+    }
+
+    public void stopGameLoop() {
+        if (gameLoop != null) {
+            gameLoop.stop();
+            gameLoop = null;
+            System.out.println("Game loop stopped");
+        }
     }
 
     public void setupKeyboardControls(Scene scene) {
@@ -29,8 +66,11 @@ public class GameController {
             KeyCode code = event.getCode();
 
             if (model.isGameOver()) {
-                if (code == KeyCode.R) restartGame();
-                else if (code == KeyCode.ESCAPE) view.returnToMenu();
+                if (code == KeyCode.R) {
+                    restartGame();
+                } else if (code == KeyCode.ESCAPE) {
+                    view.returnToMenu();
+                }
                 event.consume();
                 return;
             }
@@ -79,7 +119,9 @@ public class GameController {
 
     public void hardDrop() {
         if (!paused && !model.isGameOver()) {
-            while (model.moveDown()) { }
+            while (model.moveDown()) {
+                //continue
+            }
             view.update(model);
         }
     }
@@ -107,6 +149,7 @@ public class GameController {
         view.hidePauseMessage();
         view.requestFocusForWindow();
     }
+
 
     public void handleGameOver() {
         if (gameOverHandled) return;

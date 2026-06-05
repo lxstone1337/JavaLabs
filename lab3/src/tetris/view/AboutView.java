@@ -15,16 +15,18 @@ import javafx.scene.effect.DropShadow;
 import javafx.stage.Stage;
 
 public class AboutView {
-    private final Stage stage;
+    private Stage stage;
+    private MainMenuView mainMenuView;
 
-    public AboutView(Stage stage) {
+    public AboutView(Stage stage, MainMenuView mainMenuView) {
         this.stage = stage;
+        this.mainMenuView = mainMenuView;
     }
 
     public void show() {
         VBox root = new VBox(20);
         root.setAlignment(Pos.CENTER);
-        root.setStyle("-fx-padding: 40 20 20 20;");
+        root.setStyle("-fx-padding: 30;");
 
         LinearGradient gradient = new LinearGradient(0, 0, 1, 1, true, CycleMethod.NO_CYCLE,
                 new Stop(0, Color.rgb(20, 30, 50)),
@@ -33,46 +35,34 @@ public class AboutView {
         root.setBackground(new javafx.scene.layout.Background(
                 new javafx.scene.layout.BackgroundFill(gradient, null, null)));
 
-        // Заголовок
-        Text title = new Text("ABOUT TETRIS");
+        Text title = new Text("ABOUT");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 48));
         title.setFill(Color.rgb(255, 100, 100));
-        title.setEffect(new DropShadow(10, Color.rgb(255, 0, 0, 0.5)));
+        title.setEffect(new DropShadow(8, Color.rgb(255, 0, 0, 0.5)));
 
-        // Разделитель
-        Text divider = new Text("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        divider.setFill(Color.rgb(255, 100, 100));
-        divider.setFont(Font.font("Consolas", FontWeight.BOLD, 14));
-
-        // Описание
-        Text description = new Text(
-                """
-                        Tetris game on Java
-                        
-                         Features:
-                          • Score and lines tracking
-                          • High scores saved locally
-                         Controls:
-                          ← →   – Move left/right
-                          ↓     – Move down
-                          ↑     – Rotate
-                          SPACE – Hard drop
-                          R     – Restart game
-                          ESC   – Pause / Resume
-                """
+        Text info = new Text(
+                "Tetris Classic\n\n" +
+                        "Version 1.0\n\n" +
+                        "Controls:\n" +
+                        "← → - Move\n" +
+                        "↓ - Down\n" +
+                        "↑ - Rotate\n" +
+                        "SPACE - Hard drop\n" +
+                        "R - Restart\n" +
+                        "ESC - Pause\n\n" +
+                        "Clear lines to earn points!"
         );
-        description.setFont(Font.font("Consolas", FontWeight.NORMAL, 13));
-        description.setFill(Color.rgb(220, 220, 240));
-        description.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
-        description.setEffect(new DropShadow(3, Color.rgb(0, 0, 0, 0.5)));
+        info.setFont(Font.font("Consolas", FontWeight.NORMAL, 14));
+        info.setFill(Color.rgb(220, 220, 240));
+        info.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        info.setEffect(new DropShadow(3, Color.rgb(0, 0, 0, 0.5)));
 
-        // Кнопка назад
-        Button backBtn = new Button("BACK TO MENU");
+        Button backBtn = new Button("BACK");
         backBtn.setFont(Font.font("Arial", FontWeight.BOLD, 16));
         backBtn.setStyle(
                 "-fx-background-color: linear-gradient(to bottom, #4CAF50, #2E7D32);" +
                         "-fx-text-fill: white;" +
-                        "-fx-padding: 12 40;" +
+                        "-fx-padding: 10 35;" +
                         "-fx-cursor: hand;" +
                         "-fx-background-radius: 25;" +
                         "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 8, 0, 0, 3);"
@@ -80,7 +70,7 @@ public class AboutView {
         backBtn.setOnMouseEntered(e -> backBtn.setStyle(
                 "-fx-background-color: linear-gradient(to bottom, #66BB6A, #388E3C);" +
                         "-fx-text-fill: white;" +
-                        "-fx-padding: 12 40;" +
+                        "-fx-padding: 10 35;" +
                         "-fx-cursor: hand;" +
                         "-fx-background-radius: 25;" +
                         "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.7), 12, 0, 0, 4);"
@@ -88,21 +78,21 @@ public class AboutView {
         backBtn.setOnMouseExited(e -> backBtn.setStyle(
                 "-fx-background-color: linear-gradient(to bottom, #4CAF50, #2E7D32);" +
                         "-fx-text-fill: white;" +
-                        "-fx-padding: 12 40;" +
+                        "-fx-padding: 10 35;" +
                         "-fx-cursor: hand;" +
                         "-fx-background-radius: 25;" +
                         "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 8, 0, 0, 3);"
         ));
+
         backBtn.setOnAction(e -> {
-            MainMenuView menu = new MainMenuView(stage);
-            stage.setScene(menu.getScene());
+            stage.setScene(mainMenuView.getScene());
         });
 
-        root.getChildren().addAll(title, divider, description, backBtn);
+        root.getChildren().addAll(title, info, backBtn);
 
         Scene scene = new Scene(root, 500, 600);
         stage.setScene(scene);
-        stage.setTitle("About - Tetris");
+        stage.setTitle("About");
         stage.setResizable(false);
         stage.show();
     }

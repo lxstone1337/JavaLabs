@@ -4,7 +4,6 @@ import tetris.model.GameModel;
 import tetris.controller.GameController;
 import tetris.model.RectanglePart;
 import tetris.model.Shape;
-import javafx.animation.AnimationTimer;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.BorderPane;
@@ -35,9 +34,9 @@ public class TetrisView {
     private Rectangle[][] nextShapeGrid;
     private Text scoreText;
     private Text linesText;
-    private AnimationTimer gameLoop;
     private Text pauseText;
     private boolean isGameOverShown = false;
+    private MainMenuView mainMenuView;
     private GameController controller;
 
     private int[][] mesh;
@@ -46,13 +45,20 @@ public class TetrisView {
     private boolean gameOver;
     private Shape currentShape;
     private Shape nextShape;
-//l
+
     private static final int NEXT_COLS = 6;
     private static final int NEXT_ROWS = 4;
+    private static final int CELL_SIZE = 30;
 
-    public TetrisView(Stage stage) {
+
+    public TetrisView(Stage stage, MainMenuView mainMenuView) {
         this.stage = stage;
+        this.mainMenuView = mainMenuView;
         initUI();
+    }
+
+    public void setController(GameController controller) {
+        this.controller = controller;
     }
 
     private void initUI() {
@@ -70,6 +76,8 @@ public class TetrisView {
         int size = GameModel.SIZE;
         int width = GameModel.WIDTH;
         int height = GameModel.HEIGHT;
+        int nextWidth = NEXT_COLS * CELL_SIZE;
+        int nextHeight = NEXT_ROWS * CELL_SIZE;
         int xmax = size * width;
         int ymax = size * height;
 
@@ -98,9 +106,7 @@ public class TetrisView {
 
         VBox rightPanel = new VBox(20);
         rightPanel.setStyle("-fx-padding: 20 30 20 30; -fx-background-color: rgba(0,0,0,0.3);");
-        rightPanel.setPrefWidth(280);
-        rightPanel.setMinWidth(280);
-        rightPanel.setMaxWidth(280);
+        rightPanel.setPrefWidth(240);
         rightPanel.setAlignment(Pos.TOP_CENTER);
 
         Text gameTitle = new Text("TETRIS");
@@ -123,21 +129,16 @@ public class TetrisView {
         nextLabel.setFill(Color.rgb(200, 200, 200));
         nextLabel.setEffect(new DropShadow(2, Color.rgb(0, 0, 0, 0.5)));
 
-        //область для след фигуры
         Pane nextShapeArea = new Pane();
         nextShapeArea.setStyle("-fx-background-color: rgba(20, 30, 50, 0.8); -fx-border-color: rgba(255,255,255,0.3); -fx-border-width: 2;");
-        nextShapeArea.setPrefSize(180, 120);
-        nextShapeArea.setMinSize(180, 120);
-        nextShapeArea.setMaxSize(180, 120);
+        nextShapeArea.setPrefSize(nextWidth, nextHeight);
         nextShapeArea.setEffect(new DropShadow(5, Color.rgb(0, 0, 0, 0.5)));
-
-        int cellSize = 30;
 
         for (int x = 0; x < NEXT_COLS; x++) {
             for (int y = 0; y < NEXT_ROWS; y++) {
-                Rectangle rect = new Rectangle(cellSize - 1, cellSize - 1);
-                rect.setX(x * cellSize);
-                rect.setY(y * cellSize);
+                Rectangle rect = new Rectangle(CELL_SIZE - 1, CELL_SIZE - 1);
+                rect.setX(x * CELL_SIZE);
+                rect.setY(y * CELL_SIZE);
                 rect.setFill(Color.TRANSPARENT);
                 rect.setStroke(Color.rgb(80, 90, 120, 0.3));
                 rect.setStrokeWidth(0.8);
@@ -148,9 +149,9 @@ public class TetrisView {
         nextShapeGrid = new Rectangle[NEXT_COLS][NEXT_ROWS];
         for (int y = 0; y < NEXT_ROWS; y++) {
             for (int x = 0; x < NEXT_COLS; x++) {
-                Rectangle rect = new Rectangle(cellSize - 1, cellSize - 1);
-                rect.setX(x * cellSize);
-                rect.setY(y * cellSize);
+                Rectangle rect = new Rectangle(CELL_SIZE - 1, CELL_SIZE - 1);
+                rect.setX(x * CELL_SIZE);
+                rect.setY(y * CELL_SIZE);
                 rect.setFill(Color.TRANSPARENT);
                 rect.setStroke(Color.rgb(120, 130, 160, 0.5));
                 rect.setStrokeWidth(1.0);
@@ -195,7 +196,6 @@ public class TetrisView {
         int width = GameModel.WIDTH;
         int height = GameModel.HEIGHT;
 
-        //глав. поле
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 if (mesh[x][y] == 1) {
@@ -211,7 +211,6 @@ public class TetrisView {
             }
         }
 
-        //текущ. фигура
         if (currentShape != null && !gameOver) {
             Color shapeColor = currentShape.getColor();
             Color brighter = shapeColor.brighter().brighter();
@@ -240,7 +239,7 @@ public class TetrisView {
             Color brighter = shapeColor.brighter().brighter();
 
             int shapeWidth = 4;
-            int offsetX = (NEXT_COLS - shapeWidth) / 2; // (6-4)/2 = 1 - центрирование
+            int offsetX = (NEXT_COLS - shapeWidth) / 2;
 
             for (RectanglePart rect : nextShape.getRectangles()) {
                 int gx = (rect.x / size) - (width / 2 - 2) + offsetX;
@@ -289,19 +288,25 @@ public class TetrisView {
         box.setLayoutY(GameModel.YMAX / 2 - 80);
         box.setPrefWidth(300);
         box.setUserData("game_over");
+
         Text gameOverText = new Text("GAME OVER");
         gameOverText.setFont(Font.font("Arial", FontWeight.BOLD, 44));
         gameOverText.setFill(Color.rgb(255, 80, 80));
         gameOverText.setEffect(new DropShadow(10, Color.rgb(255, 0, 0, 0.7)));
         gameOverText.setTextAlignment(TextAlignment.CENTER);
+
         Text hint = new Text("Press  R  to Restart\nPress ESC to Menu");
         hint.setFont(Font.font("Arial", FontWeight.BOLD, 16));
         hint.setFill(Color.rgb(255, 255, 100));
         hint.setEffect(new DropShadow(4, Color.rgb(0, 0, 0, 0.5)));
         hint.setTextAlignment(TextAlignment.CENTER);
+
         box.getChildren().addAll(gameOverText, hint);
         gameArea.getChildren().add(box);
-        controller.handleGameOver();
+
+        if (controller != null) {
+            controller.handleGameOver();
+        }
     }
 
     public void hideGameOverMessage() {
@@ -331,29 +336,6 @@ public class TetrisView {
         }
     }
 
-    public void startGameLoop(Runnable onUpdate) {
-        if (gameLoop != null) gameLoop.stop();
-        gameLoop = new AnimationTimer() {
-            private long lastUpdate = 0;
-            @Override
-            public void handle(long now) {
-                if (lastUpdate == 0) {
-                    lastUpdate = now;
-                    return;
-                }
-                if (now - lastUpdate > 300_000_000) {
-                    onUpdate.run();
-                    lastUpdate = now;
-                }
-            }
-        };
-        gameLoop.start();
-    }
-
-    public void stopGameLoop() {
-        if (gameLoop != null) gameLoop.stop();
-    }
-
     public void requestFocusForWindow() {
         Platform.runLater(() -> {
             if (stage.getScene() != null && stage.getScene().getWindow() != null) {
@@ -366,17 +348,20 @@ public class TetrisView {
     public void show() {
         stage.setTitle("Tetris");
         stage.setResizable(false);
-        if (!stage.isShowing()) { stage.show(); }
+        if (!stage.isShowing()) {
+            stage.show();
+        }
         requestFocusForWindow();
         scene.getRoot().requestFocus();
     }
 
     public void returnToMenu() {
-        stopGameLoop();
+        if (controller != null) {
+            controller.stopGameLoop();
+        }
         scene.setOnKeyPressed(null);
 
-        MainMenuView menu = new MainMenuView(stage);
-        stage.setScene(menu.getScene());
+        stage.setScene(mainMenuView.getScene());
 
         Platform.runLater(() -> {
             if (stage.getScene() != null && stage.getScene().getWindow() != null) {
@@ -384,7 +369,6 @@ public class TetrisView {
             }
         });
     }
-
     public Scene getScene() {
         return scene;
     }

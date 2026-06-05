@@ -1,15 +1,23 @@
 package tetris;
 
 import tetris.view.MainMenuView;
+import tetris.controller.MainMenuController;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
 public class TetrisApplication extends Application {
     @Override
     public void start(Stage primaryStage) {
-        MainMenuView menu = new MainMenuView(primaryStage);
-        primaryStage.setScene(menu.getScene());
-        primaryStage.setTitle("Menu");
+        MainMenuView menuView = new MainMenuView(primaryStage);
+
+        MainMenuController menuController = new MainMenuController(primaryStage, menuView);
+
+        primaryStage.setScene(menuView.getScene());
+        primaryStage.setTitle("Tetris");
         primaryStage.show();
     }
-}//l
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}

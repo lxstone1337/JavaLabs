@@ -16,11 +16,13 @@ import javafx.scene.effect.DropShadow;
 import javafx.stage.Stage;
 
 public class HighScoresView {
-    private final Stage stage;
-    private final HighScoresManager highScores;
+    private Stage stage;
+    private HighScoresManager highScores;
+    private MainMenuView mainMenuView;
 
-    public HighScoresView(Stage stage) {
+    public HighScoresView(Stage stage, MainMenuView mainMenuView) {
         this.stage = stage;
+        this.mainMenuView = mainMenuView;
         this.highScores = new HighScoresManager();
     }
 
@@ -92,9 +94,9 @@ public class HighScoresView {
                         "-fx-background-radius: 25;" +
                         "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 8, 0, 0, 3);"
         ));
+
         backBtn.setOnAction(e -> {
-            MainMenuView menu = new MainMenuView(stage);
-            stage.setScene(menu.getScene());
+            stage.setScene(mainMenuView.getScene());
         });
 
         root.getChildren().addAll(title, scoresBox, backBtn);
