@@ -25,14 +25,6 @@ public class HighScoresManager {
         return new ArrayList<>(scores);
     }
 
-    public boolean isHighScore(int score) {
-        if (scores.size() < 10) {
-            return true;
-        }
-        boolean isHigh = score > scores.get(scores.size() - 1).score;
-        return isHigh;
-    }
-
     private void loadScores() {
         File file = new File(SCORES_FILE);
         if (!file.exists()) {

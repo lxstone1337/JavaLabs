@@ -33,7 +33,6 @@ public class MainMenuController {
         stage.setScene(gameView.getScene());
         gameView.show();
         gameView.update(model);
-        gameView.requestFocusForWindow();
     }
 
     private void showHighScores() {

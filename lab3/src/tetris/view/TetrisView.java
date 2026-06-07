@@ -345,22 +345,12 @@ public class TetrisView {
         }
     }
 
-    public void requestFocusForWindow() {
-        Platform.runLater(() -> {
-            if (stage.getScene() != null && stage.getScene().getWindow() != null) {
-                stage.getScene().getWindow().requestFocus();
-            }
-            stage.requestFocus();
-        });
-    }
-
     public void show() {
         stage.setTitle("Tetris");
         stage.setResizable(false);
         if (!stage.isShowing()) {
             stage.show();
         }
-        requestFocusForWindow();
         scene.getRoot().requestFocus();
     }
 

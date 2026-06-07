@@ -16,8 +16,4 @@ public class TetrisApplication extends Application {
         primaryStage.setTitle("Tetris");
         primaryStage.show();
     }
-
-    public static void main(String[] args) {
-        launch(args);
-    }
 }

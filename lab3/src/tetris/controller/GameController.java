@@ -147,7 +147,6 @@ public class GameController {
         view.update(model);
         view.hideGameOverMessage();
         view.hidePauseMessage();
-        view.requestFocusForWindow();
     }
 
 
